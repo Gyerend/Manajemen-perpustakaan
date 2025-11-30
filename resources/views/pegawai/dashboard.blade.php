@@ -23,7 +23,7 @@
                 </a>
 
                 {{-- Kelola Koleksi --}}
-                <a href="{{ route('books.collection.index') }}" class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-indigo-500 transition duration-300 hover:shadow-xl hover:bg-indigo-50">
+                <a href="{{ route('books.index') }}" class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-indigo-500 transition duration-300 hover:shadow-xl hover:bg-indigo-50">
                     <div class="flex items-center space-x-4">
                          <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.414 9.362 5 8 5c-4 0-4 4-4 4v7c0 4 4 4 4 4h8c4 0 4-4 4-4v-7c0-4-4-4-4-4 0 0-1.5-.414-3.5-1.253zM18 9h-4M8 9H6"></path></svg>
                         <div>
