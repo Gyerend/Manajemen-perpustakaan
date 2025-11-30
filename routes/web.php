@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReviewController;
+use App\Models\Book;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -63,6 +64,8 @@ Route::middleware('auth')->group(function () {
 // ===============================================
 Route::middleware(['auth', 'role:admin,pegawai'])->prefix('books')->name('books.')->group(function () {
     Route::resource('collection', BookController::class)->except(['show']);
+
+    Route::get('{book}/edit', [BookController::class, 'edit'])->name('edit');
 });
 
 

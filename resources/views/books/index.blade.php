@@ -49,9 +49,11 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $book->max_loan_days }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Rp{{ number_format($book->daily_fine_rate, 0, ',', '.') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Rp{{ number_format($book->daily_fine_rate, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                            <a href="{{ route('books.collection.edit', $book) }}" class="text-indigo-600 hover:text-indigo-800 transition duration-150">Edit</a>
+
+
+                                            <a href="{{ route('books.edit', $book) }}" class="text-indigo-600 hover:text-indigo-800 transition duration-150">Edit</a>
 
                                             <form action="{{ route('books.collection.destroy', $book) }}" method="POST" class="inline" onsubmit="return confirm('Anda yakin ingin menghapus buku ini? Semua data terkait (pinjaman, review) juga akan terhapus.');">
                                                 @csrf
@@ -68,6 +70,8 @@
                     <div class="mt-6">
                         {{ $books->links() }}
                     </div>
+
+
                 </div>
             </div>
         </div>
