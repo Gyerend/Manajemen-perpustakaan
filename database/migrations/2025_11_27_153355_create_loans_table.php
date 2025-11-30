@@ -10,12 +10,16 @@ return new class extends Migration
     {
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('book_id')->constrained('books');
 
-            // FIX: Tambahkan nullable() pada semua kolom tanggal
-            $table->date('loan_date')->nullable(); // <-- Dibuat nullable untuk Reservasi
-            $table->date('due_date')->nullable();  // <-- Dibuat nullable
+            // PERBAIKAN 1: Tambahkan onDelete('cascade') untuk User (mendukung delete account)
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
+            // PERBAIKAN 2: Tambahkan onDelete('cascade') untuk Book (mendukung delete book)
+            $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
+
+            // FIX 3: Pertahankan nullable() untuk Reservasi
+            $table->date('loan_date')->nullable();
+            $table->date('due_date')->nullable();
             $table->date('return_date')->nullable();
 
             $table->enum('status', ['pending', 'borrowed', 'returned', 'extended', 'reserved', 'reserved_active'])->default('borrowed');

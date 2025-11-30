@@ -13,8 +13,13 @@ return new class extends Migration
     {
         Schema::create('reviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users');
-            $table->foreignId('book_id')->constrained('books');
+
+            // PERBAIKAN 1: Tambahkan onDelete('cascade') untuk User (Mendukung Delete Account)
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
+            // PERBAIKAN 2: Tambahkan onDelete('cascade') untuk Book (Mendukung Delete Book)
+            $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
+
             $table->unsignedTinyInteger('rating'); // 1 hingga 5
             $table->text('comment');
             $table->timestamps();
@@ -28,4 +33,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('reviews');
     }
-};
+    };
