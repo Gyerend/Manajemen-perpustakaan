@@ -63,9 +63,12 @@ Route::middleware('auth')->group(function () {
 // ROUTE BOOK MANAGEMENT (Admin & Pegawai)
 // ===============================================
 Route::middleware(['auth', 'role:admin,pegawai'])->prefix('books')->name('books.')->group(function () {
-    Route::resource('collection', BookController::class)->except(['show']);
-
+    Route::get('/', [BookController::class, 'index'])->name('index');
+    Route::get('create', [BookController::class, 'create'])->name('create');
+    Route::post('/', [BookController::class, 'store'])->name('store');
     Route::get('{book}/edit', [BookController::class, 'edit'])->name('edit');
+    Route::patch('{book}', [BookController::class, 'update'])->name('update');
+    Route::delete('{book}', [BookController::class, 'destroy'])->name('destroy');
 });
 
 

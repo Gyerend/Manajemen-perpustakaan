@@ -15,7 +15,7 @@ class CatalogController extends Controller
     /**
      * Menampilkan Homepage (Discover) dengan Rekomendasi Buku Populer.
      */
-    public function home(Request $request): View // Menerima objek Request
+    public function home(Request $request): View
     {
         // Mendapatkan 4 buku dengan rating tertinggi sebagai rekomendasi populer
         $recommendedBooks = Book::withAvg('reviews', 'rating')
@@ -88,7 +88,7 @@ class CatalogController extends Controller
     /**
      * Menampilkan detail buku.
      */
-    public function show(Book $book): View
+    public function show(Book $book) // Hapus :View return type hint di sini sementara
     {
         // Load ulasan terkait buku
         $reviews = $book->reviews()->with('user')->orderBy('created_at', 'desc')->get();
@@ -124,6 +124,9 @@ class CatalogController extends Controller
             }
         }
 
-        return view('catalog.show', compact('book', 'reviews', 'averageRating', 'isBorrowed', 'canReview'));
+        // PERBAIKAN: Menggunakan response() untuk menambahkan header anti-caching
+        return response()->view('catalog.show', compact('book', 'reviews', 'averageRating', 'isBorrowed', 'canReview'))
+          ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+          ->header('Pragma', 'no-cache');
     }
 }

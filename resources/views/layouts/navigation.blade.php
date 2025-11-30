@@ -30,7 +30,7 @@
                                 {{ __('Katalog Buku') }}
                             </x-nav-link>
                         @elseif ($user->isPegawai() || $user->isAdmin())
-                            <x-nav-link :href="route('books.collection.index')" :active="request()->routeIs('books.collection.index')">
+                            <x-nav-link :href="route('books.index')" :active="request()->routeIs('books.index')">
                                 {{ __('Kelola Buku') }}
                             </x-nav-link>
                             <x-nav-link :href="route('pegawai.loans.pending')" :active="request()->routeIs('pegawai.loans.pending')">
@@ -112,7 +112,7 @@
                         {{ __('Katalog Buku') }}
                     </x-responsive-nav-link>
                 @elseif ($user->isPegawai() || $user->isAdmin())
-                    <x-responsive-nav-link :href="route('books.collection.index')" :active="request()->routeIs('books.collection.index')">
+                    <x-responsive-nav-link :href="route('books.index')" :active="request()->routeIs('books.collection.index')">
                         {{ __('Kelola Buku') }}
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('pegawai.loans.pending')" :active="request()->routeIs('pegawai.loans.pending')">

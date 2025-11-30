@@ -16,7 +16,7 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-xl">
                 <div class="p-6 text-gray-900">
                     <div class="flex justify-end mb-6">
-                        <a href="{{ route('books.collection.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 flex items-center space-x-1">
+                        <a href="{{ route('books.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-150 flex items-center space-x-1">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             <span>Tambah Buku Baru</span>
                         </a>
@@ -55,7 +55,7 @@
 
                                             <a href="{{ route('books.edit', $book) }}" class="text-indigo-600 hover:text-indigo-800 transition duration-150">Edit</a>
 
-                                            <form action="{{ route('books.collection.destroy', $book) }}" method="POST" class="inline" onsubmit="return confirm('Anda yakin ingin menghapus buku ini? Semua data terkait (pinjaman, review) juga akan terhapus.');">
+                                            <form action="{{ route('books.destroy', $book) }}" method="POST" class="inline" onsubmit="return confirm('Anda yakin ingin menghapus buku ini? Semua data terkait (pinjaman, review) juga akan terhapus.');">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit" class="text-red-600 hover:text-red-800 transition duration-150">Hapus</button>

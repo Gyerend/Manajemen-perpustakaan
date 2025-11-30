@@ -151,12 +151,13 @@ class LoanController extends Controller
 
         // 2. Cek apakah sudah pernah meminjam atau mereservasi
         $existingLoanOrReservation = $user->loans()->where('book_id', $book->id)
-            ->whereIn('status', ['borrowed', 'extended', 'reserved', 'reserved_active'])
-            ->exists();
+        ->whereIn('status', ['borrowed', 'extended', 'reserved', 'reserved_active']) // Menangkap semua status aktif/reserved
+        ->exists();
 
-        if ($existingLoanOrReservation) {
-            return back()->with('error', 'Anda sudah memiliki pinjaman atau reservasi aktif untuk buku ini.');
-        }
+    if ($existingLoanOrReservation) {
+        // Pesan ini akan dikirimkan jika reservasi/pinjaman aktif sudah ada
+        return back()->with('error', 'Anda sudah memiliki pinjaman atau reservasi aktif untuk buku ini.');
+    }
 
         // 3. Buat Reservasi baru
         Loan::create([
@@ -336,6 +337,8 @@ class LoanController extends Controller
         }
 
         $loan->update(['status' => 'reserved_active']);
+
+
 
         Notification::create([
             'user_id' => $loan->user_id,

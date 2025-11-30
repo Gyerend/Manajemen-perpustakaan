@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Admin; // PASTIKAN NAMESPACE INI BENAR
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Session;
 
 class BookController extends Controller
 {
@@ -15,12 +17,11 @@ class BookController extends Controller
      */
     protected function validationRules(): array
     {
+        // ... (aturan validasi)
         return [
             'title' => ['required', 'string', 'max:255'],
             'author' => ['required', 'string', 'max:255'],
             'publisher' => ['required', 'string', 'max:255'],
-            // Validasi tahun agar tidak lebih dari tahun depan
-            'publication_year' => ['required', 'digits:4', 'integer', 'max:' . (date('Y') + 1)],
             'category' => ['required', 'string', 'max:255'],
             'stock' => ['required', 'integer', 'min:0'],
             'max_loan_days' => ['required', 'integer', 'min:1'],
@@ -53,7 +54,7 @@ class BookController extends Controller
     {
         $request->validate($this->validationRules());
         Book::create($request->all());
-        return redirect()->route('books.collection.index')->with('status', 'Buku baru berhasil ditambahkan!');
+        return redirect()->route('books.index')->with('status', 'Buku baru berhasil ditambahkan!');
     }
 
     /**
@@ -71,7 +72,7 @@ class BookController extends Controller
     {
         $request->validate($this->validationRules());
         $book->update($request->all());
-        return redirect()->route('books.collection.index')->with('status', 'Data buku berhasil diperbarui!');
+        return redirect()->route('books.index')->with('status', 'Data buku berhasil diperbarui!');
     }
 
     /**
@@ -79,8 +80,18 @@ class BookController extends Controller
      */
     public function destroy(Book $book): RedirectResponse
     {
-        // Catatan: Dalam proyek nyata, ini harus menghapus loans/reviews terkait
-        $book->delete();
-        return redirect()->route('books.collection.index')->with('status', 'Buku berhasil dihapus dari koleksi.');
+        try {
+            $activeLoans = $book->loans()->whereIn('status', ['borrowed', 'extended', 'reserved', 'reserved_active'])->count();
+
+            if ($activeLoans > 0) {
+                return redirect()->route('books.index')->with('error', 'Gagal menghapus! Buku masih memiliki '.$activeLoans.' pinjaman/reservasi aktif. Harus diselesaikan terlebih dahulu.');
+            }
+
+            $book->delete();
+            return redirect()->route('books.index')->with('status', 'Buku berhasil dihapus dari koleksi.');
+
+        } catch (\Exception $e) {
+            return redirect()->route('books.index')->with('error', 'Gagal menghapus! Terjadi kesalahan database ('.$e->getMessage().'). Coba hapus loan/review terkait secara manual.');
+        }
     }
 }
