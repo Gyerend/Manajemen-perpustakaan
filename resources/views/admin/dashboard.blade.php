@@ -59,8 +59,7 @@
                     <h3 class="font-bold text-lg mb-4 text-gray-800">Akses Cepat</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <a href="{{ route('admin.users.index') }}" class="bg-indigo-50 p-4 rounded-lg text-indigo-800 font-semibold hover:bg-indigo-100 transition">Kelola Pengguna</a>
-                        <a href="{{ route('books.collection.index') }}" class="bg-indigo-50 p-4 rounded-lg text-indigo-800 font-semibold hover:bg-indigo-100 transition">Kelola Koleksi</a>
-                        <a href="{{ route('pegawai.loans.pending') }}" class="bg-indigo-50 p-4 rounded-lg text-indigo-800 font-semibold hover:bg-indigo-100 transition">Proses Pinjaman</a>
+                        <a href="{{ route('books.index') }}" class="bg-indigo-50 p-4 rounded-lg text-indigo-800 font-semibold hover:bg-indigo-100 transition">Kelola Koleksi</a>                        <a href="{{ route('pegawai.loans.pending') }}" class="bg-indigo-50 p-4 rounded-lg text-indigo-800 font-semibold hover:bg-indigo-100 transition">Proses Pinjaman</a>
                         <a href="{{ route('admin.analytics.index') }}" class="bg-indigo-50 p-4 rounded-lg text-indigo-800 font-semibold hover:bg-indigo-100 transition">Laporan Analitik</a>
                     </div>
                  </div>
