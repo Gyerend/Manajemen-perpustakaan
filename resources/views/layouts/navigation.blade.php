@@ -36,6 +36,9 @@
                             <x-nav-link :href="route('pegawai.loans.pending')" :active="request()->routeIs('pegawai.loans.pending')">
                                 {{ __('Proses Pinjaman') }}
                             </x-nav-link>
+                            <x-nav-link :href="route('pegawai.reservations.pending')" :active="request()->routeIs('pegawai.reservations.pending')">
+                                {{ __('Daftar Reservasi') }}
+                            </x-nav-link>
                         @endif
                         @if ($user->isAdmin())
                              <x-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.index')">

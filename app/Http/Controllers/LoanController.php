@@ -66,6 +66,16 @@ class LoanController extends Controller
             return back()->with('error', 'Stok buku ini sedang tidak tersedia.');
         }
 
+        // Cek apakah ada reservasi aktif untuk buku ini
+        $hasActiveReservation = Loan::where('book_id', $book->id)
+            ->where('status', 'reserved_active')
+            ->exists();
+
+        // Jika stok tersisa 1 dan ada reservasi aktif (artinya stok sudah dialokasikan), tolak peminjaman langsung
+        if ($book->stock === 1 && $hasActiveReservation) {
+            return back()->with('error', 'Stok buku tersisa 1 dan sudah dialokasikan untuk reservasi aktif. Tidak dapat dipinjam langsung.');
+        }
+
         if ($user->is_blocked) {
             return back()->with('error', 'Peminjaman diblokir. Harap lunasi denda tertunggak Anda.');
         }
