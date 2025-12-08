@@ -28,7 +28,7 @@ class AnalyticController extends Controller
         $loanTrends = Loan::select(
                 DB::raw('COUNT(id) as count'),
                 // FIX SQLITE: Menggunakan strftime('%Y-%m', column)
-                DB::raw("strftime('%Y-%m', loan_date) as month_year")
+                DB::raw("DATE_FORMAT(loan_date, '%Y-%m') as month_year")
             )
             // FIX SQLITE: Membandingkan dengan string tanggal yang diformat
             ->where('loan_date', '>=', $sixMonthsAgo)
