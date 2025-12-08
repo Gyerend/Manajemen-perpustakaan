@@ -12,7 +12,7 @@ class Book extends Model
 
     protected $fillable = [
         'title', 'author', 'publisher', 'publication_year', 'category',
-        'stock', 'max_loan_days', 'daily_fine_rate', 'description'
+        'stock', 'max_loan_days', 'daily_fine_rate', 'description', 'image'
     ];
 
     // Relasi ke Reviews

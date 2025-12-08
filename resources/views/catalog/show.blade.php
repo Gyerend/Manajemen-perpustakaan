@@ -39,9 +39,15 @@
                 {{-- Bagian Kiri: Cover dan Informasi Pinjaman (Status & Aksi) --}}
                 <div class="lg:w-1/3 p-8 bg-gray-50 border-r border-gray-100 flex flex-col">
 
-                    {{-- Cover Placeholder --}}
-                    <div class="book-cover-detail mb-8">
-                        {{ $book->title }}
+                    {{-- Cover Image --}}
+                    <div class="mb-8">
+                        @if($book->image)
+                            <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="w-full h-96 object-cover rounded-xl border border-gray-300">
+                        @else
+                            <div class="book-cover-detail">
+                                {{ $book->title }}
+                            </div>
+                        @endif
                     </div>
 
                     <h3 class="text-xl font-bold mb-4 text-gray-800 border-b pb-2 flex items-center">

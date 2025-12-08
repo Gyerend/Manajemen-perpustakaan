@@ -74,9 +74,13 @@
                             <div class="book-grid">
                                 @foreach ($recommendedBooks as $book)
                                     <a href="{{ route('catalog.show', $book) }}" class="book-card-style">
-                                        <div class="book-cover-placeholder bg-yellow-50 border-yellow-200 text-yellow-800">
-                                            {{ $book->title }}
-                                        </div>
+                                        @if($book->image)
+                                            <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="w-full h-64 object-cover">
+                                        @else
+                                            <div class="book-cover-placeholder bg-yellow-50 border-yellow-200 text-yellow-800">
+                                                {{ $book->title }}
+                                            </div>
+                                        @endif
                                         <div class="p-4">
                                             <h4 class="text-base font-semibold truncate text-gray-900">{{ $book->title }}</h4>
                                             <p class="text-xs text-gray-500 mt-1 truncate">{{ $book->author }}</p>
@@ -102,9 +106,13 @@
                             <div class="book-grid">
                                 @foreach ($latestBooks as $book)
                                     <a href="{{ route('catalog.show', $book) }}" class="book-card-style">
-                                        <div class="book-cover-placeholder bg-green-50 border-green-200 text-green-800">
-                                            {{ $book->title }}
-                                        </div>
+                                        @if($book->image)
+                                            <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="w-full h-64 object-cover">
+                                        @else
+                                            <div class="book-cover-placeholder bg-green-50 border-green-200 text-green-800">
+                                                {{ $book->title }}
+                                            </div>
+                                        @endif
                                         <div class="p-4">
                                             <h4 class="text-base font-semibold truncate text-gray-900">{{ $book->title }}</h4>
                                             <p class="text-xs text-gray-500 mt-1 truncate">{{ $book->author }}</p>

@@ -45,7 +45,13 @@
                 <div class="book-card bg-white">
                     <a href="{{ route('catalog.show', $book) }}" class="block">
                         <div class="book-cover bg-gray-200 border border-gray-300">
-                            {{ $book->title }}
+                            @if($book->image)
+                                <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="w-full h-48 object-cover">
+                            @else
+                                <div class="flex items-center justify-center h-48 text-gray-500">
+                                    {{ $book->title }}
+                                </div>
+                            @endif
                         </div>
                         <div class="p-3">
                             <h4 class="text-base font-semibold truncate">{{ $book->title }}</h4>

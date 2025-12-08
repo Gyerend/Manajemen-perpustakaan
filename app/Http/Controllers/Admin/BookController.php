@@ -27,6 +27,7 @@ class BookController extends Controller
             'max_loan_days' => ['required', 'integer', 'min:1'],
             'daily_fine_rate' => ['required', 'numeric', 'min:0'],
             'description' => ['nullable', 'string'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048'], // max 2MB
         ];
     }
 
@@ -53,7 +54,17 @@ class BookController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $request->validate($this->validationRules());
-        Book::create($request->all());
+
+        $data = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('books', $imageName, 'public');
+            $data['image'] = $imagePath;
+        }
+
+        Book::create($data);
         return redirect()->route('books.index')->with('status', 'Buku baru berhasil ditambahkan!');
     }
 
@@ -71,8 +82,31 @@ class BookController extends Controller
     public function update(Request $request, Book $book): RedirectResponse
     {
         $request->validate($this->validationRules());
-        $book->update($request->all());
+
+        $data = $request->except('image');
+
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($book->image) {
+                \Storage::disk('public')->delete($book->image);
+            }
+
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('books', $imageName, 'public');
+            $data['image'] = $imagePath;
+        }
+
+        $book->update($data);
         return redirect()->route('books.index')->with('status', 'Data buku berhasil diperbarui!');
+    }
+
+    /**
+     * Menampilkan detail buku.
+     */
+    public function show(Book $book): View
+    {
+        return view('books.show', compact('book'));
     }
 
     /**

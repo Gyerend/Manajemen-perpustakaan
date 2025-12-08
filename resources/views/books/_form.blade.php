@@ -52,6 +52,19 @@
     </div>
 </div>
 
+<div class="mb-4">
+    <x-input-label for="image" :value="__('Gambar Buku')" />
+    <input id="image" class="block mt-1 w-full rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500" type="file" name="image" accept="image/*" />
+    <x-input-error :messages="$errors->get('image')" class="mt-2" />
+
+    @if(isset($book) && $book->image)
+        <div class="mt-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Gambar Saat Ini:</label>
+            <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="w-32 h-40 object-cover rounded-lg border">
+        </div>
+    @endif
+</div>
+
 <div class="mb-6">
     <x-input-label for="description" :value="__('Deskripsi')" />
     <textarea id="description" name="description" rows="4" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg shadow-sm block mt-1 w-full">{{ old('description', $book->description ?? '') }}</textarea>

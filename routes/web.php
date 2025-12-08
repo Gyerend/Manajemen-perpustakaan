@@ -66,6 +66,7 @@ Route::middleware(['auth', 'role:admin,pegawai'])->prefix('books')->name('books.
     Route::get('/', [BookController::class, 'index'])->name('index');
     Route::get('create', [BookController::class, 'create'])->name('create');
     Route::post('/', [BookController::class, 'store'])->name('store');
+    Route::get('{book}', [BookController::class, 'show'])->name('show');
     Route::get('{book}/edit', [BookController::class, 'edit'])->name('edit');
     Route::patch('{book}', [BookController::class, 'update'])->name('update');
     Route::delete('{book}', [BookController::class, 'destroy'])->name('destroy');

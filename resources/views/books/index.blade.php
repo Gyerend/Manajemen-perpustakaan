@@ -26,6 +26,7 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Gambar</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Judul</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Penulis</th>
                                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stok</th>
@@ -37,8 +38,19 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @foreach ($books as $book)
                                     <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if($book->image)
+                                                <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="w-16 h-20 object-cover rounded-lg border">
+                                            @else
+                                                <div class="w-16 h-20 bg-gray-200 rounded-lg border flex items-center justify-center">
+                                                    <span class="text-gray-500 text-xs">Tidak ada gambar</span>
+                                                </div>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $book->title }}
+                                            <a href="{{ route('books.show', $book) }}" class="hover:text-indigo-700">
+                                                {{ $book->title }}
+                                            </a>
                                             <p class="text-xs text-gray-500 mt-0.5">{{ $book->category }}</p>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $book->author }}</td>
@@ -49,10 +61,9 @@
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{{ $book->max_loan_days }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Rp{{ number_format($book->daily_fine_rate, 0, ',', '.') }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Rp{{ number_format($book->daily_fine_rate, 0, ',', '.') }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-
-
+                                            <a href="{{ route('books.show', $book) }}" class="text-blue-600 hover:text-blue-800 transition duration-150">Lihat</a>
                                             <a href="{{ route('books.edit', $book) }}" class="text-indigo-600 hover:text-indigo-800 transition duration-150">Edit</a>
 
                                             <form action="{{ route('books.destroy', $book) }}" method="POST" class="inline" onsubmit="return confirm('Anda yakin ingin menghapus buku ini? Semua data terkait (pinjaman, review) juga akan terhapus.');">
