@@ -100,6 +100,10 @@ class CatalogController extends Controller
         $isBorrowed = false;
         $canReview = false;
 
+        $hasActiveReservation = \App\Models\Loan::where('book_id', $book->id)
+            ->where('status', 'reserved_active')
+            ->exists();
+
         if (Auth::check()) {
             /** @var User $user */
             $user = Auth::user();
@@ -125,7 +129,7 @@ class CatalogController extends Controller
         }
 
         // PERBAIKAN: Menggunakan response() untuk menambahkan header anti-caching
-        return response()->view('catalog.show', compact('book', 'reviews', 'averageRating', 'isBorrowed', 'canReview'))
+        return response()->view('catalog.show', compact('book', 'reviews', 'averageRating', 'isBorrowed', 'canReview', 'hasActiveReservation'))
           ->header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
           ->header('Pragma', 'no-cache');
     }

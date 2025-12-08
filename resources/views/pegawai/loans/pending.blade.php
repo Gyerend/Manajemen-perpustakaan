@@ -49,7 +49,7 @@
                                             {{ $loan->is_late ? 'text-red-600 font-bold' : 'text-gray-900' }}">
                                             {{ $loan->due_date->format('d M Y') }}
                                             @if($loan->is_late)
-                                                <span class="text-xs text-red-500 block">Lewat {{ $loan->days_late }} hari</span>
+                                                <span class="text-xs text-red-500 block">Lewat {{ (int) abs($loan->days_late) }} hari</span>
                                             @endif
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm">

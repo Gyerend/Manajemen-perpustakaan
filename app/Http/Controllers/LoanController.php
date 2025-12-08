@@ -214,7 +214,7 @@ class LoanController extends Controller
         foreach ($loans as $loan) {
             $dueDate = Carbon::parse($loan->due_date);
             $loan->is_late = Carbon::now()->greaterThan($dueDate);
-            $loan->days_late = $loan->is_late ? Carbon::now()->diffInDays($dueDate) : 0;
+            $loan->days_late = $loan->is_late ? abs(Carbon::now()->diffInDays($dueDate)) : 0;
             $loan->potential_fine = $loan->days_late * $loan->book->daily_fine_rate;
         }
 
@@ -337,8 +337,6 @@ class LoanController extends Controller
         }
 
         $loan->update(['status' => 'reserved_active']);
-
-
 
         Notification::create([
             'user_id' => $loan->user_id,

@@ -84,8 +84,8 @@
 
                         {{-- GAMBAR SAMPUL --}}
                         <div class="book-cover bg-gray-200 border-b border-gray-300 flex items-center justify-center overflow-hidden">
-                            @if ($book->cover_image)
-                                <img src="{{ asset('storage/books/' . $book->cover_image) }}" alt="{{ $book->title }}" class="h-16 w-12 object-cover rounded shadow">
+                            @if ($book->image)
+                                <img src="{{ Storage::url($book->image) }}" alt="{{ $book->title }}" class="h-16 w-12 object-cover rounded shadow">
                             @else
                                 <div class="p-3 text-center text-gray-500 font-medium text-sm">
                                     Sampul Tidak Tersedia
