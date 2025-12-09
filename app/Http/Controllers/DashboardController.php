@@ -101,7 +101,7 @@ class DashboardController extends Controller
             if (in_array($loan->status, ['borrowed', 'extended'])) {
                 $dueDate = Carbon::parse($loan->due_date);
                 $loan->is_late = Carbon::now()->greaterThan($dueDate);
-                $loan->days_late = $loan->is_late ? Carbon::now()->diffInDays($dueDate) : 0;
+                $loan->days_late = $loan->is_late ? (int) Carbon::now()->diffInDays($dueDate) : 0;
                 $loan->has_fine = $loan->fines->where('status', 'outstanding')->isNotEmpty();
             } else {
                 $loan->is_late = false;

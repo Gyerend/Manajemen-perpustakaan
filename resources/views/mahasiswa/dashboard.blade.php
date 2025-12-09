@@ -31,7 +31,7 @@
                     {{-- Tampilkan detail denda --}}
                     @foreach($outstandingFines as $loan)
                         @foreach($loan->fines->where('status', 'outstanding') as $fine)
-                            <p class="text-sm mt-1">- Denda Rp{{ number_format($fine->amount, 0, ',', '.') }} (Buku: {{ $loan->book->title }}, Alasan: {{ $fine->reason }})</p>
+                            <p class="text-sm mt-1">- Denda Rp{{ abs(number_format($fine->amount, 0, ',', '.')) }} (Buku: {{ $loan->book->title }}, Alasan: {{ $fine->reason }})</p>
                         @endforeach
                     @endforeach
                 </div>
@@ -106,7 +106,7 @@
                                             @if($loan->due_date)
                                                 {{ $loan->due_date->format('d M Y') }}
                                                 @if(($loan->is_late ?? false))
-                                                    <span class="text-xs text-red-500 block">Terlambat {{ $loan->days_late }} hari</span>
+                                                    <span class="text-xs text-red-500 block">Terlambat {{ abs($loan->days_late) }} hari</span>
                                                 @endif
                                             @else
                                                 -
