@@ -60,7 +60,7 @@
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-red-700">
-                                            Rp{{ number_format($loan->potential_fine, 0, ',', '.') }}
+                                            Rp{{ number_format(abs($loan->potential_fine), 0, ',', '.') }}
                                         </td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm">
                                             <form action="{{ route('pegawai.loans.return', $loan) }}" method="POST" class="inline" onsubmit="return confirm('Konfirmasi pengembalian buku {{ $loan->book->title }}?');">

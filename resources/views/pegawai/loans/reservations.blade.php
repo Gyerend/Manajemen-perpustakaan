@@ -18,6 +18,7 @@
                 </div>
             @endif
 
+
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-semibold mb-4">Reservasi Menunggu (Stok 0)</h3>
@@ -61,7 +62,7 @@
                                         </td>
                                     </tr>
                                 @empty
-                                    <tr>
+                                <tr>
                                         <td colspan="5" class="px-4 py-4 text-center text-gray-500">Tidak ada reservasi buku yang menunggu saat ini.</td>
                                     </tr>
                                 @endforelse
