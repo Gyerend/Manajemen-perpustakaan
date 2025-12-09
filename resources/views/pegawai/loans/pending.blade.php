@@ -99,15 +99,8 @@
                 </div>
             </div>
 
-            {{-- Catatan: Untuk Denda yang sudah dicatat, harus ada halaman terpisah (misalnya /pegawai/fines) --}}
 
-            <div class="mt-8 bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500">
-                <h3 class="text-xl font-bold text-red-800 mb-3 flex items-center space-x-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.503-1.662 1.79-3.045l-6.928-13.855a2 2 0 00-3.58 0L3.648 19.955c-.713 1.383.25 3.045 1.79 3.045z"></path></svg>
-                    Penting: Status Denda & Pemblokiran
-                </h3>
-                <p class="text-gray-700">Setelah buku dikembalikan, denda otomatis dihitung dan Mahasiswa diblokir. Anda dapat melunaskan denda tersebut melalui halaman detail denda (yang harus ditambahkan). Untuk saat ini, pelunasan dilakukan di `LoanController::processFinePayment`.</p>
-            </div>
+
         </div>
     </div>
 </x-app-layout>
