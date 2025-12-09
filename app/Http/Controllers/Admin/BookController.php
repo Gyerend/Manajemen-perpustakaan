@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class BookController extends Controller
 {
@@ -88,7 +89,7 @@ class BookController extends Controller
         if ($request->hasFile('image')) {
             // Delete old image if exists
             if ($book->image) {
-                \Storage::disk('public')->delete($book->image);
+                Storage::disk('public')->delete($book->image);
             }
 
             $image = $request->file('image');
@@ -122,8 +123,8 @@ class BookController extends Controller
             }
 
             $book->delete();
-            return redirect()->route('books.index')->with('status', 'Buku berhasil dihapus dari koleksi.');
 
+            return redirect()->route('books.index')->with('status', 'Buku berhasil dihapus dari koleksi.');
         } catch (\Exception $e) {
             return redirect()->route('books.index')->with('error', 'Gagal menghapus! Terjadi kesalahan database ('.$e->getMessage().'). Coba hapus loan/review terkait secara manual.');
         }

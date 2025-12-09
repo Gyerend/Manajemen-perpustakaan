@@ -62,7 +62,7 @@ class DashboardController extends Controller
         // 1. Ambil Pinjaman Aktif (Borrowed, Extended, Reserved)
         $activeLoans = $user->loans()
             ->with('book', 'fines')
-            ->whereIn('status', ['borrowed', 'extended', 'reserved', 'reserved_active']) // FIX: Tambahkan reservasi
+            ->whereIn('status', ['borrowed', 'extended', 'reserved', 'reserved_active'])
             ->orderBy('due_date', 'asc')
             ->get();
 

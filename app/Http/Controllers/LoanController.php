@@ -24,6 +24,7 @@ class LoanController extends Controller
         $returnDate = Carbon::now();
 
         if ($returnDate->greaterThan($dueDate)) {
+            // Perbedaan hari yang dihitung harus absolut
             $daysLate = $returnDate->diffInDays($dueDate);
             $dailyRate = $loan->book->daily_fine_rate;
             $amount = $daysLate * $dailyRate;
@@ -62,20 +63,29 @@ class LoanController extends Controller
         /** @var \App\Models\User $user */
         $user = Auth::user();
 
-        if ($book->stock <= 0) {
+        // Cari reservasi aktif milik user saat ini
+        $activeReservation = $user->loans()
+            ->where('book_id', $book->id)
+            ->where('status', 'reserved_active')
+            ->first();
+
+        // 1. Cek Stok Awal
+        if ($book->stock <= 0 && !$activeReservation) {
             return back()->with('error', 'Stok buku ini sedang tidak tersedia.');
         }
 
-        // Cek apakah ada reservasi aktif untuk buku ini
-        $hasActiveReservation = Loan::where('book_id', $book->id)
+        // 2. Cek Reservasi Aktif Pengguna Lain
+        $hasActiveReservationByOther = Loan::where('book_id', $book->id)
             ->where('status', 'reserved_active')
+            ->where('user_id', '!=', $user->id)
             ->exists();
 
-        // Jika stok tersisa 1 dan ada reservasi aktif (artinya stok sudah dialokasikan), tolak peminjaman langsung
-        if ($book->stock === 1 && $hasActiveReservation) {
-            return back()->with('error', 'Stok buku tersisa 1 dan sudah dialokasikan untuk reservasi aktif. Tidak dapat dipinjam langsung.');
+        // Jika stok = 1 dan ada reservasi aktif dari pengguna lain, tolak peminjaman langsung
+        if ($book->stock === 1 && $hasActiveReservationByOther) {
+            return back()->with('error', 'Stok buku tersisa 1 dan sudah dialokasikan untuk reservasi aktif oleh pengguna lain. Tidak dapat dipinjam langsung.');
         }
 
+        // 3. Cek Blokir & Batas Maksimal Pinjam
         if ($user->is_blocked) {
             return back()->with('error', 'Peminjaman diblokir. Harap lunasi denda tertunggak Anda.');
         }
@@ -85,17 +95,19 @@ class LoanController extends Controller
             return back()->with('error', 'Anda telah mencapai batas maksimal peminjaman (' . self::MAX_LOANS . ' buku).');
         }
 
-        // Cek apakah user sudah mereservasi buku ini dan reservasi tersebut sudah aktif
-        $activeReservation = $user->loans()->where('book_id', $book->id)->where('status', 'reserved_active')->first();
+        // 4. Proses Peminjaman
+        $loanToNotify = null;
 
-        // Jika ada reservasi aktif yang valid, ubah status reservasi menjadi 'borrowed'
+        // Jika ada reservasi aktif milik user, ubah status reservasi menjadi 'borrowed'
         if ($activeReservation) {
             $activeReservation->update([
                 'loan_date' => Carbon::now(),
                 'due_date' => Carbon::now()->addDays($book->max_loan_days),
                 'status' => 'borrowed',
             ]);
-            $book->decrement('stock'); // Stok sudah dikurangi saat aktivasi, jadi ini tidak perlu
+            // STOK TIDAK DI-DECREMENT karena diasumsikan sudah 0/dialokasikan saat reservasi diaktifkan.
+            $loanToNotify = $activeReservation;
+
         } else {
             // Jika tidak ada reservasi aktif, buat pinjaman baru
             $loan = Loan::create([
@@ -105,14 +117,16 @@ class LoanController extends Controller
                 'due_date' => Carbon::now()->addDays($book->max_loan_days),
                 'status' => 'borrowed',
             ]);
-            $book->decrement('stock');
+            $loanToNotify = $loan;
         }
 
-        // Kirim Notifikasi Konfirmasi
+        $book->decrement('stock');
+
+        // 5. Kirim Notifikasi Konfirmasi
         Notification::create([
             'user_id' => $user->id,
             'title' => 'Peminjaman Berhasil',
-            'message' => "Anda berhasil meminjam buku '{$book->title}'. Jatuh tempo pada: " . ($activeReservation ? $activeReservation->due_date->format('d F Y') : $loan->due_date->format('d F Y')) . ".",
+            'message' => "Anda berhasil meminjam buku '{$book->title}'. Jatuh tempo pada: " . $loanToNotify->due_date->format('d F Y') . ".",
         ]);
 
         return redirect()->route('mahasiswa.dashboard')->with('status', 'Buku berhasil dipinjam! Cek detail di dashboard Anda.');
@@ -164,10 +178,10 @@ class LoanController extends Controller
         ->whereIn('status', ['borrowed', 'extended', 'reserved', 'reserved_active']) // Menangkap semua status aktif/reserved
         ->exists();
 
-    if ($existingLoanOrReservation) {
-        // Pesan ini akan dikirimkan jika reservasi/pinjaman aktif sudah ada
-        return back()->with('error', 'Anda sudah memiliki pinjaman atau reservasi aktif untuk buku ini.');
-    }
+        if ($existingLoanOrReservation) {
+            // Pesan ini akan dikirimkan jika reservasi/pinjaman aktif sudah ada
+            return back()->with('error', 'Anda sudah memiliki pinjaman atau reservasi aktif untuk buku ini.');
+        }
 
         // 3. Buat Reservasi baru
         Loan::create([
@@ -212,6 +226,43 @@ class LoanController extends Controller
     // ===============================================
 
     /**
+     * Pegawai: Membatalkan/Menolak Reservasi (BARU).
+     */
+    public function processCancelReservation(Loan $loan): RedirectResponse
+    {
+        if (!in_array($loan->status, ['reserved', 'reserved_active'])) {
+            return back()->with('error', 'Pinjaman ini bukan reservasi aktif atau menunggu.');
+        }
+
+        $bookTitle = $loan->book->title;
+        $statusBefore = $loan->status;
+
+        // Jika statusnya 'reserved_active', maka stok buku seharusnya 0.
+        if ($statusBefore === 'reserved_active') {
+            // Cek apakah ada reservasi lain yang menunggu untuk buku yang sama
+            $hasOtherWaitingReservations = Loan::where('book_id', $loan->book_id)
+                ->where('id', '!=', $loan->id)
+                ->where('status', 'reserved')
+                ->exists();
+
+            // Jika tidak ada reservasi lain yang menunggu, naikkan stok buku.
+            if (!$hasOtherWaitingReservations) {
+                $loan->book->increment('stock');
+            }
+        }
+
+        $loan->delete(); // Hapus entri reservasi
+
+        Notification::create([
+            'user_id' => $loan->user_id,
+            'title' => 'Reservasi Dibatalkan/Ditolak',
+            'message' => "Reservasi buku '{$bookTitle}' Anda telah dibatalkan oleh petugas perpustakaan. Status sebelumnya: " . ucfirst(str_replace('_', ' ', $statusBefore)) . ".",
+        ]);
+
+        return back()->with('status', 'Reservasi berhasil dibatalkan/dihapus.');
+    }
+
+    /**
      * Pegawai: Menampilkan daftar pinjaman aktif.
      */
     public function pendingLoans(): View
@@ -224,7 +275,7 @@ class LoanController extends Controller
         foreach ($loans as $loan) {
             $dueDate = Carbon::parse($loan->due_date);
             $loan->is_late = Carbon::now()->greaterThan($dueDate);
-            $loan->days_late = $loan->is_late ? abs(Carbon::now()->diffInDays($dueDate)) : 0;
+            $loan->days_late = $loan->is_late ? Carbon::now()->diffInDays($dueDate) : 0;
             $loan->potential_fine = $loan->days_late * $loan->book->daily_fine_rate;
         }
 
@@ -253,35 +304,11 @@ class LoanController extends Controller
         Notification::create([
             'user_id' => $loan->user_id,
             'title' => 'Pengembalian Diterima',
-            'message' => "Pengembalian buku '{$loan->book->title}' telah dikonfirmasi. " . ($fine ? "Anda memiliki denda tertunggak sebesar Rp{$fine->amount}." : ""),
+            'message' => "Pengembalian buku '{$loan->book->title}' telah dikonfirmasi. " . ($fine ? "Anda memiliki denda tertunggak sebesar Rp" . number_format($fine->amount, 0, ',', '.') . "." : ""),
         ]);
 
-        // 4. Cek Reservasi yang Menunggu (BARU)
-        $nextReservation = Loan::where('book_id', $loan->book_id)
-            ->where('status', 'reserved')
-            ->orderBy('created_at', 'asc')
-            ->first();
-
-        if ($nextReservation) {
-            // Aktifkan reservasi pertama
-            $nextReservation->update(['status' => 'reserved_active']);
-
-            // Kirim notifikasi ke pemesan
-            Notification::create([
-                'user_id' => $nextReservation->user_id,
-                'title' => 'Buku Tersedia untuk Dipinjam!',
-                'message' => "Buku yang Anda reservasi, '{$loan->book->title}', kini tersedia. Silakan pinjam dalam 24 jam.",
-            ]);
-
-            // Stok TIDAK DITAMBAH. Stok tetap 0 karena buku ini langsung dialokasikan untuk reservasi aktif.
-            $loan->book->update(['stock' => 0]); // Pastikan stok 0
-
-            return back()->with('status', 'Pengembalian buku berhasil diproses dan reservasi diaktifkan.');
-        } else {
-            // Jika tidak ada reservasi, naikkan stok
-            $loan->book->increment('stock');
-            return back()->with('status', 'Pengembalian buku berhasil diproses. Stok buku diperbarui.');
-        }
+        $loan->book->increment('stock');
+        return back()->with('status', 'Pengembalian buku berhasil diproses. Stok buku diperbarui.');
     }
 
     /**
@@ -298,10 +325,12 @@ class LoanController extends Controller
             'status' => 'paid',
         ]);
 
-        $hasOutstandingFines = Fine::where('loan_id', $fine->loan_id)
-            ->where('status', 'outstanding')
-            ->exists();
+        // Cek denda tertunggak lainnya yang terkait dengan USER, bukan hanya loan ini
+        $hasOutstandingFines = Fine::whereHas('loan', function($query) use ($fine) {
+            $query->where('user_id', $fine->loan->user_id);
+        })->where('status', 'outstanding')->exists();
 
+        // Jika tidak ada denda tertunggak lagi untuk user ini, batalkan blokir
         if (!$hasOutstandingFines) {
             $fine->loan->user->update(['is_blocked' => false]);
         }
@@ -309,7 +338,7 @@ class LoanController extends Controller
         Notification::create([
             'user_id' => $fine->loan->user_id,
             'title' => 'Pembayaran Denda Lunas',
-            'message' => "Pembayaran denda sebesar Rp{$fine->amount} telah lunas. Anda kini dapat meminjam kembali.",
+            'message' => "Pembayaran denda sebesar Rp" . number_format($fine->amount, 0, ',', '.') . " telah lunas. Anda kini dapat meminjam kembali.",
         ]);
 
         return back()->with('status', 'Pembayaran denda berhasil dicatat. Status mahasiswa telah diperbarui.');
@@ -329,12 +358,17 @@ class LoanController extends Controller
     }
 
     /**
-     * Pegawai: Mengaktifkan Reservasi secara Manual (Jika diperlukan) (BARU).
+     * Pegawai: Mengaktifkan Reservasi secara Manual (Jika diperlukan).
      */
     public function activateReservation(Loan $loan): RedirectResponse
     {
         if ($loan->status !== 'reserved') {
             return back()->with('error', 'Reservasi harus dalam status "reserved" untuk diaktifkan.');
+        }
+
+        // Cek Stok Buku
+        if ($loan->book->stock <= 0) {
+            return back()->with('error', 'Stok buku ini saat ini 0. Tidak dapat mengaktifkan reservasi secara manual.');
         }
 
         // Cek apakah buku sudah ada reservasi aktif lain
@@ -346,14 +380,20 @@ class LoanController extends Controller
             return back()->with('error', 'Sudah ada reservasi aktif untuk buku ini. Batalkan reservasi aktif sebelumnya.');
         }
 
+        // 1. Update status
         $loan->update(['status' => 'reserved_active']);
 
+        //2 Stok dikurangi 1 dari stok yang tersedia. Karena stok > 0, stok akan berkurang.
+        // Jika stok = 1, stok akan menjadi 0.
+        // $loan->book->decrement('stock');
+
+        // 3. Kirim notifikasi
         Notification::create([
             'user_id' => $loan->user_id,
             'title' => 'Buku Tersedia untuk Dipinjam!',
             'message' => "Buku yang Anda reservasi, '{$loan->book->title}', kini tersedia. Silakan pinjam dalam 24 jam.",
         ]);
 
-        return back()->with('status', 'Reservasi berhasil diaktifkan dan notifikasi dikirim ke mahasiswa.');
+        return back()->with('status', 'Reservasi berhasil diaktifkan dan notifikasi dikirim ke mahasiswa. Stok buku diatur menjadi 0.');
     }
 }

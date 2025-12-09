@@ -23,8 +23,23 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
+                'regex:/^.+@unhas\.ac\.id$/i',
                 Rule::unique(User::class)->ignore($this->user()->id),
             ],
+        ];
+    }
+
+    /**
+     * Get the error messages for the defined validation rules.
+     *
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'email.regex' => 'Alamat email harus menggunakan domain resmi @unhas.ac.id.',
+            // Anda juga bisa menambahkan pesan untuk aturan lain jika diperlukan
+            // 'email.unique' => 'Email ini sudah digunakan oleh pengguna lain.',
         ];
     }
 }

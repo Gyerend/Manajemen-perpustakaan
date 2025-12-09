@@ -11,10 +11,10 @@ return new class extends Migration
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
 
-            // PERBAIKAN 1: Tambahkan onDelete('cascade') untuk User (mendukung delete account)
+            // Tambahkan onDelete('cascade') untuk User (mendukung delete account)
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
 
-            // PERBAIKAN 2: Tambahkan onDelete('cascade') untuk Book (mendukung delete book)
+            // Tambahkan onDelete('cascade') untuk Book (mendukung delete book)
             $table->foreignId('book_id')->constrained('books')->onDelete('cascade');
 
             // FIX 3: Pertahankan nullable() untuk Reservasi

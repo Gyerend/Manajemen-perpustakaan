@@ -26,7 +26,7 @@ class CatalogController extends Controller
         // Mendapatkan daftar kategori unik
         $categories = Book::select('category')
             ->distinct()
-            ->limit(5)
+            ->limit(10)
             ->pluck('category');
 
         // Mendapatkan buku terbaru (misal 4 terbaru)

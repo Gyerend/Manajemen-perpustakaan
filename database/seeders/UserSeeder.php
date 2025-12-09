@@ -29,7 +29,7 @@ class UserSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
 
-        // --- PEGAWAI (Untuk Proses Loan & Pengembalian) ---
+
         User::create([
             'name' => 'Budi Pegawai',
             'email' => 'pegawai@mail.com',
