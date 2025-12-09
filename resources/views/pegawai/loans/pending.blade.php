@@ -71,9 +71,16 @@
                                                 </button>
                                             </form>
 
-                                            {{-- Tambahan: Jika Mahasiswa punya denda tertunggak, tampilkan tombol bayar --}}
-                                            @if($loan->user->is_blocked && $loan->user->loans->where('status', 'returned')->first() && $loan->user->loans->where('status', 'returned')->first()->fines->where('status', 'outstanding')->isNotEmpty())
-                                                {{-- Logika ini kompleks, perlu dikoreksi. Cukup tampilkan link ke Daftar Denda. --}}
+                                            @if($loan->outstanding_fine)
+                                                {{-- Kita menggunakan ID denda yang ditemukan di controller --}}
+                                                <form action="{{ route('pegawai.fines.pay', $loan->outstanding_fine) }}" method="POST" class="inline ml-2" onsubmit="return confirm('Konfirmasi pembayaran denda sebesar Rp{{ number_format($loan->outstanding_fine->amount, 0, ',', '.') }} untuk {{ $loan->user->name }}?');">
+                                                    @csrf
+                                                    @method('PATCH')
+                                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white py-1 px-3 rounded-lg text-xs font-medium shadow-sm transition duration-150 flex items-center space-x-1">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 .895 3 2s-1.343 2-3 2-3 .895-3 2 1.343 2 3 2m-3-4h6m-9-4v10a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v2"></path></svg>
+                                                        <span>Bayar Denda</span>
+                                                    </button>
+                                                </form>
                                             @endif
                                         </td>
                                     </tr>

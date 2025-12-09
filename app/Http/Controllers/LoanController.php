@@ -267,7 +267,9 @@ class LoanController extends Controller
      */
     public function pendingLoans(): View
     {
-        $loans = Loan::with(['user', 'book'])
+        // MUAT RELASI user dan book, serta relasi user.fines (jika fines terkait dengan user)
+        // Atau muat fines melalui loans, tapi lebih baik melalui user.
+        $loans = Loan::with(['user.fines', 'book']) // Pastikan fines user dimuat
                      ->whereIn('status', ['borrowed', 'extended'])
                      ->orderBy('due_date', 'asc')
                      ->paginate(15);
@@ -277,11 +279,17 @@ class LoanController extends Controller
             $loan->is_late = Carbon::now()->greaterThan($dueDate);
             $loan->days_late = $loan->is_late ? Carbon::now()->diffInDays($dueDate) : 0;
             $loan->potential_fine = $loan->days_late * $loan->book->daily_fine_rate;
+
+            // Tentukan denda tertunggak terkecil (atau yang pertama ditemukan) untuk tombol "Bayar"
+            // Kita cari denda yang statusnya 'outstanding' milik user ini.
+            $loan->outstanding_fine = $loan->user->fines
+                ->where('status', 'outstanding')
+                ->sortBy('id')
+                ->first();
         }
 
         return view('pegawai.loans.pending', compact('loans'));
     }
-
     /**
      * Pegawai: Memproses Pengembalian Buku (Update untuk Cek Reservasi).
      */
@@ -396,4 +404,6 @@ class LoanController extends Controller
 
         return back()->with('status', 'Reservasi berhasil diaktifkan dan notifikasi dikirim ke mahasiswa. Stok buku diatur menjadi 0.');
     }
+
+
 }
